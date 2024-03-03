@@ -1,25 +1,37 @@
 require("dotenv").config(); // Load environment variables from a .env file into process.env
 const express = require("express");
-const db = require("./database"); // Import the database connection
-
+const { config } = require("./database"); // Import the database connection
+const mysql = require("mysql2");
 const app = express();
 
+const app_url = process.env.APP_URL || "http://localhost";
 const port = process.env.PORT || 8080;
 
-// Parse JSON bodies for this app. Make sure you put it before your routes.
-app.use(express.json());
+const userRoutes = require("./routes/users");
+const postRoutes = require("./routes/posts");
+const commentRoutes = require("./routes/comments");
+const likeRoutes = require("./routes/likes");
 
-// Example route: Get list of users
-app.get("/users", async (req, res) => {
-  try {
-    const [users, fields] = await db.query("SELECT * FROM users");
-    res.json(users);
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    res.status(500).send("Server error");
+const connection = mysql.createConnection(config);
+
+connection.connect((error) => {
+  if (error) {
+    console.error("Error connecting to the database:", error);
+    return;
   }
+  console.log("Connected to the MySQL database successfully");
+  connection.end(); // Close the connection after successful connection
 });
 
+// Parse JSON bodies for this app.
+app.use(express.json());
+
+// Use the routes
+app.use("/api/users", userRoutes);
+app.use("/api/posts", postRoutes);
+app.use("/api/comments", commentRoutes);
+app.use("/api/likes", likeRoutes);
+
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
+  console.log(`my-stoic api listening at ${app_url}:${port}`);
 });

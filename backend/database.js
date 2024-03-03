@@ -7,8 +7,7 @@ const password = process.env.DB_PASSWORD;
 const database = process.env.DB_NAME;
 const port = process.env.DB_PORT;
 
-// Create a connection pool
-const pool = mysql.createPool({
+const config = {
   host: host,
   user: user,
   password: password,
@@ -17,6 +16,9 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-});
+};
 
-module.exports = pool.promise();
+// Create a connection pool
+const pool = mysql.createPool(config).promise();
+
+module.exports = { config, pool };
